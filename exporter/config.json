@@ -51,6 +51,32 @@
       "webqueryUrl": "http://127.0.0.1:10080",
       "apiKeyFile": "/etc/status-exporter/ts-apikey",
       "virtualServerId": 1
+    },
+    {
+      "id": "relay",
+      "name": "Stream-Relay",
+      "desc": "Twitch-Stream weiter zu YouTube und Kick",
+      "type": "http",
+      "url": "http://127.0.0.1:8890/health",
+      "unit": "stream-relay.service",
+      "metrics": [
+        {
+          "key": "live",
+          "path": "live",
+          "label": "Twitch live"
+        },
+        {
+          "key": "streams",
+          "path": "forwarding",
+          "label": "Aktive Ziele",
+          "spark": true
+        },
+        {
+          "key": "kbps",
+          "path": "kbps",
+          "label": "kbit/s"
+        }
+      ]
     }
   ]
 }
