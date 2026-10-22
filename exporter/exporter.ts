@@ -160,11 +160,12 @@ async function checkService(c: SvcCfg) {
       try {
         let info: Record<string, any> | null = null;
         if (c.query === "webquery") {
+          // clientlist works with a read-only key (serverinfo needs the manage scope); count humans only
           const key = read(c.apiKeyFile ?? "").trim();
           const sid = c.virtualServerId ?? 1;
-          const r = await httpJson(`${c.webqueryUrl ?? "http://127.0.0.1:10080"}/${sid}/serverinfo`, c.timeoutMs, key ? { "x-api-key": key } : {});
+          const r = await httpJson(`${c.webqueryUrl ?? "http://127.0.0.1:10080"}/${sid}/clientlist`, c.timeoutMs, key ? { "x-api-key": key } : {});
           ms = r.ms;
-          info = r.body?.body?.[0] ?? null;
+          if (r.ok && r.body?.status?.code === 0 && Array.isArray(r.body.body)) clients = r.body.body.filter((x: any) => String(x.client_type) === "0").length;
         } else if (c.query === "serverquery") {
           const [user, pass] = read(c.serverqueryCredFile ?? "").trim().split(/\r?\n/);
           const t0 = performance.now();

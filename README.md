@@ -65,20 +65,21 @@ ssh -i ~/.ssh/oracle_binokel ubuntu@89.168.70.227 'bash /tmp/status-exporter/ins
 und lässt eine schon vorhandene `/etc/status-exporter/config.json` in Ruhe (`install.sh --config` überschreibt sie).
 Config-Änderungen ohne Neustart übernehmen: `sudo systemctl reload status-exporter`.
 
-## TeamSpeak aktivieren
+## TeamSpeak (an/aus)
 
-In `/etc/status-exporter/config.json` beim Dienst `teamspeak` eine Zeile ändern:
-
-```
-"enabled": true,
-```
-
-und `sudo systemctl reload status-exporter`. Für die Anzeige „Nutzer online“ zusätzlich den
-WebQuery-API-Key (nur lesend reicht) ablegen – er bleibt auf dem Server und wird nie veröffentlicht:
+Der TeamSpeak-6-Server aus [oracle-teamspeak](https://github.com/AscendancyDotA/oracle-teamspeak) ist
+eingebunden. Ein-/Ausschalten ist eine Zeile in `/etc/status-exporter/config.json` beim Dienst `teamspeak`:
 
 ```
-echo 'API-KEY' | sudo tee /etc/status-exporter/ts-apikey >/dev/null
-sudo chown root:ubuntu /etc/status-exporter/ts-apikey && sudo chmod 640 /etc/status-exporter/ts-apikey
+"enabled": true,      // false = Karte „Noch nicht eingerichtet“
+```
+
+danach `sudo systemctl reload status-exporter`. „Nutzer online“ kommt per WebQuery `clientlist`
+(nur Einträge mit `client_type` 0, Query-Verbindungen zählen nicht) mit dem **nur-lesenden** Key.
+Der Key bleibt auf dem Server und wird nie veröffentlicht:
+
+```
+sudo install -m 640 -o root -g ubuntu /etc/teamspeak6/webquery-read.key /etc/status-exporter/ts-apikey
 ```
 
 Alternativ klassische ServerQuery: `"query": "serverquery"`, `"serverqueryPort": 10011` und
