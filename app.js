@@ -9,7 +9,7 @@
     if (b == null || !isFinite(b)) return "–";
     const u = ["B", "kB", "MB", "GB", "TB"]; let i = 0;
     while (Math.abs(b) >= 1000 && i < u.length - 1) { b /= 1000; i++; }
-    return nf(b, i < 2 ? 0 : b < 10 ? 2 : d) + " " + u[i];
+    return nf(b, i < 2 ? 0 : b < 10 ? 2 : b < 100 ? d : 0) + " " + u[i];
   };
   const dur = (s) => {
     if (s == null) return "–";
@@ -17,6 +17,7 @@
     return d ? `${d} T ${h} Std` : h ? `${h} Std ${m} Min` : `${m} Min`;
   };
   const dtf = new Intl.DateTimeFormat("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  const sdf = new Intl.DateTimeFormat("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
   const tf = new Intl.DateTimeFormat("de-DE", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   const STATE = {
     up: "Online", degraded: "Eingeschränkt", down: "Offline",
@@ -53,8 +54,28 @@
   // ---------- history helpers ----------
   const series = (key) => {
     const from = Date.now() / 1000 - range * 86400;
-    return rows.filter((r) => r.t >= from && r.m && r.m[key] != null).map((r) => [r.t, r.m[key]]);
+    const pts = rows.filter((r) => r.t >= from && r.m && r.m[key] != null).map((r) => [r.t, r.m[key]]);
+    const lv = liveValue(key);
+    if (lv != null && (!pts.length || live.t > pts[pts.length - 1][0])) pts.push([live.t, lv]);
+    return pts;
   };
+  // current live value for a history key, so curves always reach "now"
+  function liveValue(key) {
+    if (!live) return null;
+    const [id, k] = key.split(".");
+    const h = live.host || {};
+    if (id === "host") {
+      if (k === "cpu") return h.cpuPct;
+      if (k === "mem") return h.memTotal ? (h.memUsed / h.memTotal) * 100 : null;
+      if (k === "disk") return h.diskTotal ? (h.diskUsed / h.diskTotal) * 100 : null;
+      if (k === "load") return h.load ? h.load[0] : null;
+      if (k === "tx" || k === "rx") return h.egress && h.egress.ok ? h.egress[k] : null;
+      return null;
+    }
+    const s = (live.services || []).find((x) => x.id === id);
+    const m = s && (s.metrics || []).find((x) => x.key === k);
+    return m ? m.value : null;
+  }
   function spark(key, cls = "") {
     const pts = series(key);
     if (pts.length < 2) return `<div class="rng">Verlauf folgt</div>`;
@@ -105,7 +126,8 @@
     }
     const f = (d) => { const p = uptimePct(id, d); return p == null ? "–" : nf(p, p === 100 ? 0 : 2) + " %"; };
     return `<div class="uptime"><div class="bars" aria-label="Verfügbarkeit der letzten 90 Tage">${bars}</div>
-      <div class="upline"><span>vor 90 Tagen</span><span>Verfügbarkeit: 24 h <b>${f(1)}</b> · 7 T <b>${f(7)}</b> · 30 T <b>${f(30)}</b> · 90 T <b>${f(90)}</b></span><span>heute</span></div></div>`;
+      <div class="upline"><span>vor 90 Tagen</span><span>heute</span></div>
+      <div class="upsum">Verfügbarkeit: <span>24 h <b>${f(1)}</b></span> · <span>7 T <b>${f(7)}</b></span> · <span>30 T <b>${f(30)}</b></span> · <span>90 T <b>${f(90)}</b></span></div></div>`;
   }
   const metricBox = (value, label, sparkKey, cls = "") =>
     `<div class="metric"><div class="v">${value}</div><div class="l">${esc(label)}</div>${sparkKey ? spark(sparkKey, cls) : ""}</div>`;
@@ -154,10 +176,10 @@
     if (h) {
       const memP = h.memTotal ? (h.memUsed / h.memTotal) * 100 : null, diskP = h.diskTotal ? (h.diskUsed / h.diskTotal) * 100 : null;
       const meter = (p) => `<div class="meter${p > 90 ? " bad" : p > 75 ? " warn" : ""}"><span style="width:${Math.min(100, p ?? 0).toFixed(1)}%"></span></div>`;
-      $("#host").innerHTML = `<div class="chead"><div class="title"><h3>Oracle-Server</h3><span class="sub">${h.cpus} vCPU · ${bytes(h.memTotal, 0)} RAM</span></div>${pill(isLive ? "up" : "unknown")}</div>
+      $("#host").innerHTML = `<div class="chead"><div class="title"><h3>Oracle-Server</h3><span class="sub">${h.cpus} vCPU · ${bytes(h.memTotal)} RAM</span></div>${pill(isLive ? "up" : "unknown")}</div>
         <div class="metrics">
           ${metricBox(pct(h.cpuPct), "CPU-Auslastung", "host.cpu")}
-          ${metricBox(h.load ? h.load.map((x) => nf(x, 2)).join(" · ") : "–", "Load 1 / 5 / 15 min", "host.load")}
+          ${metricBox(h.load ? nf(h.load[0], 2) : "–", h.load ? `Load · 5/15 min: ${nf(h.load[1], 2)} / ${nf(h.load[2], 2)}` : "Load", "host.load")}
           ${metricBox(pct(memP), `RAM · ${bytes(h.memUsed)} von ${bytes(h.memTotal)}`, "host.mem")}
           <div class="metric"><div class="v">${pct(diskP)}</div><div class="l">Speicher · ${bytes(h.diskUsed)} von ${bytes(h.diskTotal)}</div>${meter(diskP)}</div>
           ${metricBox(dur(h.uptimeS), "Laufzeit seit Neustart")}
@@ -169,12 +191,12 @@
         const early = e.basisHours < 24;
         $("#egress").innerHTML = `<div class="chead"><div class="title"><h3>Ausgehender Traffic</h3><span class="sub">${esc(e.month.split("-").reverse().join("/"))} · Oracle Free Tier: ${bytes(e.allowance, 0)} / Monat frei</span></div>${pill(bad ? "down" : e.warn ? "degraded" : "up").replace(/Online|Eingeschränkt|Offline/, bad ? "Über Freikontingent" : e.warn ? "Achtung" : "Im Rahmen")}</div>
           <div class="metrics">
-            <div class="metric" style="grid-column:1/-1"><div class="egress-big">${bytes(e.tx)} <span class="small">von ${bytes(e.allowance, 0)} · ${nf(used, used < 1 ? 2 : 1)} %</span></div>
+            <div class="metric" style="grid-column:1/-1"><div class="egress-big">${bytes(e.tx)} <span class="small">von ${bytes(e.allowance, 0)} · ${used < 0.01 ? "< 0,01" : nf(used, used < 1 ? 2 : 1)} %</span></div>
               <div class="meter${cls}" title="Verbraucht ${nf(used, 2)} %, Hochrechnung ${nf(proj, 1)} %"><span class="proj" style="width:${Math.min(100, proj).toFixed(2)}%"></span><span style="width:${Math.min(100, used).toFixed(2)}%"></span><i class="mark" style="left:${e.warnPct}%"></i></div>
-              <div class="l">Hochrechnung Monatsende: <b>${bytes(e.projected)}</b> (${nf(proj, proj < 1 ? 2 : 1)} %) · Warnschwelle ${e.warnPct} %</div>
+              <div class="l">Hochrechnung Monatsende: <b>${bytes(e.projected)}</b> (${proj < 0.01 ? "< 0,01" : nf(proj, proj < 1 ? 2 : 1)} %) · Warnschwelle ${e.warnPct} %</div>
               ${spark("host.tx", cls.trim())}</div>
             ${metricBox(bytes(e.rx), "Eingehend (kostenlos)")}
-            ${metricBox(dtf.format(new Date(e.since * 1000)), "gemessen seit (vnStat)")}
+            ${metricBox(sdf.format(new Date(e.since * 1000)).replace(",", ""), "gemessen seit (vnStat)")}
           </div>
           ${e.warn ? `<p class="note">Die Hochrechnung liegt über ${e.warnPct} % des kostenlosen Kontingents. Über ${bytes(e.allowance, 0)} hinaus berechnet Oracle ausgehenden Traffic.</p>` : ""}
           ${early ? `<p class="note info">Messung läuft erst seit ${nf(e.basisHours, 1)} Std – die Hochrechnung wird mit der Zeit genauer.</p>` : ""}

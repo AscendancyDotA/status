@@ -47,7 +47,9 @@ section h2{font-size:1.35rem;margin:0 0 1rem}
 .bars i{flex:1;border-radius:2px;background:var(--idle);min-width:1px}
 .bars i.u-ok{background:var(--ok)}.bars i.u-warn{background:var(--warn)}.bars i.u-bad{background:var(--bad)}
 .upline{display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap;color:var(--mut);font-size:.8rem;margin-top:.3rem;font-variant-numeric:tabular-nums}
-.upline b{color:var(--fg);font-weight:600}
+.upsum{color:var(--mut);font-size:.82rem;margin-top:.15rem;font-variant-numeric:tabular-nums}
+.upsum span{white-space:nowrap}
+.upsum b{color:var(--fg);font-weight:600}
 .meter{height:10px;border-radius:999px;background:var(--track);overflow:hidden;position:relative;margin:.35rem 0 .2rem}
 .meter>span{position:absolute;inset:0 auto 0 0;background:var(--acc2);border-radius:999px}
 .meter>span.proj{background:var(--acc2);opacity:.3}
