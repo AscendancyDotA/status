@@ -1,0 +1,55 @@
+{
+  "listen": "127.0.0.1",
+  "port": 8799,
+  "cacheMs": 5000,
+  "iface": "enp0s6",
+  "disk": "/",
+  "egressAllowanceBytes": 10000000000000,
+  "egressWarnPct": 70,
+  "corsOrigin": "*",
+  "services": [
+    {
+      "id": "binokel",
+      "name": "Binokel",
+      "desc": "Online-Kartenspiel (Wirtshaus)",
+      "link": "https://binokel.tail108204.ts.net/",
+      "linkLabel": "Spielen",
+      "type": "http",
+      "url": "http://127.0.0.1:8787/health",
+      "unit": "binokel.service",
+      "metrics": [
+        {
+          "key": "players",
+          "path": "conns",
+          "label": "Verbindungen",
+          "spark": true
+        },
+        {
+          "key": "tables",
+          "path": "tables",
+          "label": "Tische offen",
+          "spark": true
+        },
+        {
+          "key": "matches",
+          "path": "matches",
+          "label": "Partien gesamt"
+        }
+      ]
+    },
+    {
+      "id": "teamspeak",
+      "name": "TeamSpeak",
+      "desc": "Voice-Server · 89.168.70.227",
+      "link": "ts3server://89.168.70.227?port=9987",
+      "linkLabel": "Verbinden",
+      "type": "teamspeak",
+      "enabled": false,
+      "udpPort": 9987,
+      "query": "webquery",
+      "webqueryUrl": "http://127.0.0.1:10080",
+      "apiKeyFile": "/etc/status-exporter/ts-apikey",
+      "virtualServerId": 1
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Status – AscendancyDotA</title>
+<meta name="description" content="Live-Status der Dienste von AscendancyDotA: Binokel, TeamSpeak und der Server in der Oracle Cloud.">
+<meta name="color-scheme" content="light dark">
+<link rel="canonical" href="https://ascendancydota.github.io/status/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><div class="wrap">
+<a class="logo" href="https://ascendancydota.github.io/">Ascendancy<span>DotA</span></a>
+<nav><a href="#dienste">Dienste</a><a href="#server">Server</a><a href="https://ascendancydota.github.io/">Startseite</a></nav>
+</div></header>
+<main class="wrap">
+
+<section class="hero">
+<h1>Status</h1>
+<p id="overall" class="overall"><span class="dot"></span><span id="overall-text">Lade Live-Daten …</span></p>
+<p class="small" id="updated">&nbsp;</p>
+</section>
+
+<section id="dienste">
+<div class="sechead"><h2>Dienste</h2>
+<div class="range" role="group" aria-label="Zeitraum der Verlaufskurven"><button type="button" data-range="1" aria-pressed="true">24 h</button><button type="button" data-range="7" aria-pressed="false">7 Tage</button></div>
+</div>
+<div id="services"></div>
+</section>
+
+<section id="server">
+<h2>Server <span class="small">Oracle Cloud · Ampere A1 · Ubuntu</span></h2>
+<div id="host" class="card"><p class="small">Lade …</p></div>
+<div id="egress" class="card"></div>
+</section>
+
+<section>
+<p class="small">Live-Werte werden alle 30 Sekunden direkt vom Server abgerufen. Der Verlauf und die Verfügbarkeit stammen aus Stichproben alle 15 Minuten (GitHub Actions) und reichen bis zu 90 Tage zurück. Es werden nur Zahlen veröffentlicht – keine Namen, keine IP-Adressen. Diese Seite setzt keine Cookies und lädt keine externen Skripte oder Schriften.</p>
+</section>
+
+</main>
+<footer><div class="wrap">
+<span>© 2026 Damian Kostorz</span>
+<span><a href="https://ascendancydota.github.io/impressum.html">Impressum</a> · <a href="https://ascendancydota.github.io/datenschutz.html">Datenschutz</a> · <a href="https://github.com/AscendancyDotA/status">Quelltext</a></span>
+</div></footer>
+<noscript><p class="wrap small">Für die Live-Anzeige wird JavaScript benötigt.</p></noscript>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

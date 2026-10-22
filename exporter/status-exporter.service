@@ -1,0 +1,21 @@
+[Unit]
+Description=Status exporter for ascendancydota.github.io/status (127.0.0.1:8799)
+After=network-online.target
+
+[Service]
+User=ubuntu
+Group=ubuntu
+ExecStart=/home/ubuntu/.bun/bin/bun /opt/status-exporter/exporter.ts
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=5
+Environment=STATUS_CONFIG=/etc/status-exporter/config.json
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true
+MemoryMax=128M
+CPUQuota=20%
+
+[Install]
+WantedBy=multi-user.target
