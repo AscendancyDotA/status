@@ -5,6 +5,11 @@
 #   ssh -i ~/.ssh/oracle_binokel ubuntu@89.168.70.227 'bash /tmp/status-exporter/install.sh'
 set -euo pipefail
 src="$(cd "$(dirname "$0")" && pwd)"
+# own system user (no login, no sudo): the exporter is reachable from the internet (Funnel /status)
+getent group statusexp >/dev/null || sudo groupadd --system statusexp
+id statusexp >/dev/null 2>&1 || sudo useradd --system --gid statusexp --home-dir /nonexistent --no-create-home --shell /usr/sbin/nologin --comment "status exporter" statusexp
+# the TeamSpeak WebQuery key (if any) must be readable by that user only
+[ -f /etc/status-exporter/ts-apikey ] && sudo chgrp statusexp /etc/status-exporter/ts-apikey && sudo chmod 640 /etc/status-exporter/ts-apikey
 command -v vnstat >/dev/null || sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q vnstat
 sudo install -d -m 755 /opt/status-exporter /etc/status-exporter
 sudo install -m 644 "$src/exporter.ts" /opt/status-exporter/exporter.ts

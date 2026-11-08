@@ -79,7 +79,7 @@ danach `sudo systemctl reload status-exporter`. „Nutzer online“ kommt per We
 Der Key bleibt auf dem Server und wird nie veröffentlicht:
 
 ```
-sudo install -m 640 -o root -g ubuntu /etc/teamspeak6/webquery-read.key /etc/status-exporter/ts-apikey
+sudo install -m 640 -o root -g statusexp /etc/teamspeak6/webquery-read.key /etc/status-exporter/ts-apikey
 ```
 
 Alternativ klassische ServerQuery: `"query": "serverquery"`, `"serverqueryPort": 10011` und

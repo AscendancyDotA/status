@@ -3,8 +3,10 @@ Description=Status exporter for ascendancydota.github.io/status (127.0.0.1:8799)
 After=network-online.target
 
 [Service]
-User=ubuntu
-Group=ubuntu
+# own unprivileged user (2026-11-08, binokel item 459): the exporter is public via Funnel /status and must not see
+# ubuntu's home (ssh keys, backup key, game data). bun is the same binary as the game's, mounted read-only.
+User=statusexp
+Group=statusexp
 ExecStart=/home/ubuntu/.bun/bin/bun /opt/status-exporter/exporter.ts
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=always
@@ -12,7 +14,14 @@ RestartSec=5
 Environment=STATUS_CONFIG=/etc/status-exporter/config.json
 NoNewPrivileges=true
 ProtectSystem=strict
-ProtectHome=read-only
+ProtectHome=tmpfs
+BindReadOnlyPaths=/home/ubuntu/.bun/bin
+CapabilityBoundingSet=
+RestrictSUIDSGID=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+LockPersonality=true
 PrivateTmp=true
 MemoryMax=128M
 CPUQuota=20%
