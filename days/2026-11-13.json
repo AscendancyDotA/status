@@ -1,4 +1,5 @@
 [
 {"t":1794529712,"up":{"host":1,"binokel":1,"teamspeak":1,"relay":1},"m":{"binokel.players":1,"binokel.tables":28,"teamspeak.clients":0,"relay.streams":0,"host.cpu":4.1,"host.mem":8.9,"host.disk":14.2,"host.load":0.3,"host.tx":8002311320,"host.rx":6210398412}},
-{"t":1794553788,"up":{"host":1,"binokel":1,"teamspeak":1,"relay":1},"m":{"binokel.players":0,"binokel.tables":28,"teamspeak.clients":0,"relay.streams":0,"host.cpu":4.6,"host.mem":8.9,"host.disk":14,"host.load":0.2,"host.tx":8116027608,"host.rx":6290898617}}
+{"t":1794553788,"up":{"host":1,"binokel":1,"teamspeak":1,"relay":1},"m":{"binokel.players":0,"binokel.tables":28,"teamspeak.clients":0,"relay.streams":0,"host.cpu":4.6,"host.mem":8.9,"host.disk":14,"host.load":0.2,"host.tx":8116027608,"host.rx":6290898617}},
+{"t":1794583547,"up":{"host":1,"binokel":1,"teamspeak":1,"relay":1},"m":{"binokel.players":1,"binokel.tables":28,"teamspeak.clients":0,"relay.streams":0,"host.cpu":4,"host.mem":9.3,"host.disk":14,"host.load":0.5,"host.tx":8263254418,"host.rx":6384205065}}
 ]
