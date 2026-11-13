@@ -86,6 +86,20 @@ Alternativ klassische ServerQuery: `"query": "serverquery"`, `"serverqueryPort":
 `"serverqueryCredFile"` mit Benutzer in Zeile 1 und Passwort in Zeile 2. Ohne Query zeigt die Karte nur
 Online/Offline anhand des UDP-Ports.
 
+## Betreiber-Ansicht (nur mit Schlüssel)
+
+Der Exporter kann zusätzlich fertige JSON-Dokumente weiterreichen, die ein anderer Job auf dem Server schreibt
+(`"private"` in der Config: `keyFile` und eine Liste `files` mit `id` und `path`). Sie kommen nur unter
+`…/status/private.json` und nur mit `Authorization: Bearer <Schlüssel>`; ohne passenden Schlüssel antwortet der
+Exporter mit 404. Der Schlüssel entsteht bei `install.sh` einmalig in `/etc/status-exporter/owner-key`
+(anzeigen: `sudo cat /etc/status-exporter/owner-key`; neu vergeben: Datei löschen, `install.sh` erneut).
+
+Auf der Seite erscheint der Abschnitt nur in einem Browser, der den Schlüssel hat: einmal
+`https://ascendancydota.github.io/status/#key=<Schlüssel>` öffnen – er wird im Browser gespeichert und aus der
+Adresszeile entfernt. Ohne Schlüssel fragt die Seite nichts ab und zeigt nichts an. Die Dokumente beschreiben
+sich selbst (Abschnitte mit Kacheln, Tabellen und Balkenreihen); die Seite kennt ihren Inhalt nicht. In den
+Verlauf (`data`-Branch) gelangt davon nichts.
+
 ## Neuen Dienst hinzufügen (z. B. Stream-Relay)
 
 Nur die Exporter-Config erweitern – die Seite und die Action übernehmen neue Dienste automatisch.

@@ -205,6 +205,52 @@
     } else $("#host").innerHTML = `<p class="small">${liveErr ? "Server nicht erreichbar." : "Lade …"}</p>`;
   }
 
+  // ---------- owner view ----------
+  // Shown only in a browser that holds the owner key (opened once with …/status/#key=<key>; kept in localStorage).
+  // Without a key nothing is requested and nothing is shown. The documents describe themselves (sections of tiles,
+  // tables and bar rows), so this page knows nothing about what they contain.
+  const KEY = "status.ownerKey";
+  const store = { get: () => { try { return localStorage.getItem(KEY); } catch { return null; } }, set: (v) => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch {} } };
+  const hk = location.hash.match(/[#&]key=([0-9a-fA-F]{32,})/);
+  if (hk) { store.set(hk[1]); history.replaceState(null, "", location.pathname + location.search); }
+  let owner = null, ownerErr = null;
+  async function loadOwner() {
+    const k = store.get();
+    if (!k || !C.privateUrl) return;
+    try { owner = await getJson(C.privateUrl, { headers: { authorization: "Bearer " + k }, signal: AbortSignal.timeout(10000) }); ownerErr = null; }
+    catch (e) { ownerErr = e; }
+    renderOwner();
+  }
+  const cell = (v) => (typeof v === "number" ? nf(v, 1) : esc(v ?? "–"));
+  function ownerItem(it) {
+    if (it.type === "tiles") return `<div class="metrics">${it.tiles.map((t) => `<div class="metric"><div class="v">${cell(t.v)}</div><div class="l">${esc(t.l)}</div>${t.s ? `<div class="rng">${esc(t.s)}</div>` : ""}</div>`).join("")}</div>`;
+    if (it.type === "table") return `${it.title ? `<h4>${esc(it.title)}</h4>` : ""}<div class="tscroll"><table><thead><tr>${it.cols.map((c) => `<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>${it.rows.map((r) => `<tr>${r.map((v) => `<td>${cell(v)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>${it.note ? `<p class="small">${esc(it.note)}</p>` : ""}`;
+    if (it.type === "bars") {
+      const max = Math.max(1, ...it.values), n = it.values.length;
+      const total = it.values.reduce((a, b) => a + b, 0);
+      return `<h4>${esc(it.title)} <span class="small">${it.sum === false ? "" : `Summe ${nf(total)} · `}höchster Wert ${nf(max)}</span></h4><div class="obars" role="img" aria-label="${esc(it.title)}">${it.values.map((v, i) => `<i style="height:${v ? Math.max(4, (v / max) * 100).toFixed(1) : 0}%" title="${esc(it.labels[i])}: ${nf(v)}"></i>`).join("")}</div><div class="upline"><span>${esc(it.labels[0])}</span>${n > 8 ? `<span>${esc(it.labels[Math.floor(n / 2)])}</span>` : ""}<span>${esc(it.labels[n - 1])}</span></div>${it.note ? `<p class="small">${esc(it.note)}</p>` : ""}`;
+    }
+    return "";
+  }
+  function renderOwner() {
+    const el = $("#owner");
+    if (!store.get()) { el.hidden = true; el.innerHTML = ""; return; }
+    el.hidden = false;
+    const forget = `<button type="button" class="linkbtn" id="owner-forget">Schlüssel von diesem Gerät entfernen</button>`;
+    let html = "";
+    if (!owner) html = `<h2>Betreiber-Zahlen</h2><div class="card"><p class="small">${ownerErr ? "Nicht abrufbar – der Schlüssel passt nicht oder der Server ist nicht erreichbar." : "Lade …"} ${forget}</p></div>`;
+    else for (const d of owner.docs || []) {
+      html += `<div class="sechead"><h2>${esc(d.title || d.id)}</h2><span class="small">${d.at ? "Stand " + sdf.format(new Date(d.at * 1000)).replace(",", "") + " · " : ""}nur mit Schlüssel sichtbar</span></div>`;
+      if (d.error) { html += `<div class="card"><p class="small">Noch keine Daten.</p></div>`; continue; }
+      if (d.note) html += `<p class="small">${esc(d.note)}</p>`;
+      for (const s of d.sections || []) html += `<article class="card owner"><div class="chead"><div class="title"><h3>${esc(s.title)}</h3></div></div>${s.note ? `<p class="small">${esc(s.note)}</p>` : ""}${(s.items || []).map(ownerItem).join("")}</article>`;
+    }
+    if (owner) html += `<p class="small">${ownerErr ? "Letzter Abruf fehlgeschlagen – angezeigt wird der vorige Stand. " : ""}${forget}</p>`;
+    el.innerHTML = html;
+    $("#owner-forget")?.addEventListener("click", () => { store.set(null); owner = null; renderOwner(); });
+  }
+  if (store.get()) { renderOwner(); loadOwner(); setInterval(loadOwner, C.privateRefreshMs || 120000); }
+
   document.querySelectorAll(".range button").forEach((b) => b.addEventListener("click", () => {
     range = +b.dataset.range;
     document.querySelectorAll(".range button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));

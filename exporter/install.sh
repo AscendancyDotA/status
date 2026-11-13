@@ -10,6 +10,12 @@ getent group statusexp >/dev/null || sudo groupadd --system statusexp
 id statusexp >/dev/null 2>&1 || sudo useradd --system --gid statusexp --home-dir /nonexistent --no-create-home --shell /usr/sbin/nologin --comment "status exporter" statusexp
 # the TeamSpeak WebQuery key (if any) must be readable by that user only
 [ -f /etc/status-exporter/ts-apikey ] && sudo chgrp statusexp /etc/status-exporter/ts-apikey && sudo chmod 640 /etc/status-exporter/ts-apikey
+# owner key for …/private.json (created once; print it with: sudo cat /etc/status-exporter/owner-key)
+sudo install -d -m 755 /etc/status-exporter
+if [ ! -s /etc/status-exporter/owner-key ]; then
+  openssl rand -hex 32 | sudo tee /etc/status-exporter/owner-key >/dev/null
+fi
+sudo chown root:statusexp /etc/status-exporter/owner-key && sudo chmod 640 /etc/status-exporter/owner-key
 command -v vnstat >/dev/null || sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q vnstat
 sudo install -d -m 755 /opt/status-exporter /etc/status-exporter
 sudo install -m 644 "$src/exporter.ts" /opt/status-exporter/exporter.ts

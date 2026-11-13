@@ -7,6 +7,15 @@
   "egressAllowanceBytes": 10000000000000,
   "egressWarnPct": 70,
   "corsOrigin": "*",
+  "private": {
+    "keyFile": "/etc/status-exporter/owner-key",
+    "files": [
+      {
+        "id": "wirtshaus",
+        "path": "/var/lib/wirtshaus-stats/stats.json"
+      }
+    ]
+  },
   "services": [
     {
       "id": "binokel",

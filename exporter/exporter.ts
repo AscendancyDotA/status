@@ -1,7 +1,8 @@
 // status-exporter: tiny, dependency-free Bun HTTP service that publishes /status.json
 // (aggregate counts only: no player names, IPs or secrets) for the AscendancyDotA status page.
 // Config: /etc/status-exporter/config.json (override with STATUS_CONFIG env var).
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, statSync } from "node:fs";
+import { timingSafeEqual, createHash } from "node:crypto";
 import { connect } from "node:net";
 import { cpus } from "node:os";
 
@@ -25,6 +26,9 @@ type Cfg = {
   egressAllowanceBytes?: number; egressWarnPct?: number;
   corsOrigin?: string;
   services: SvcCfg[];
+  // Owner-only documents (…/private.json): handed out only with `Authorization: Bearer <key from keyFile>`.
+  // Each file is a ready-made JSON document written by another job on this box (the exporter only passes it on).
+  private?: { keyFile: string; files: { id: string; path: string }[] };
 };
 
 const CFG_PATH = process.env.STATUS_CONFIG ?? "/etc/status-exporter/config.json";
@@ -187,6 +191,25 @@ async function checkService(c: SvcCfg) {
   return { ...base, state, ms, metrics };
 }
 
+// ---- Owner-only documents ----
+const sha = (s: string) => createHash("sha256").update(s).digest();
+function ownerOk(req: Request): boolean {
+  const key = read(cfg.private?.keyFile ?? "").trim();
+  const got = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
+  // (hashed first: equal lengths for the constant-time compare; a missing or short key file never matches)
+  return key.length >= 32 && got.length > 0 && timingSafeEqual(sha(key), sha(got));
+}
+function privateDocs(): string {
+  const docs: unknown[] = [];
+  for (const f of cfg.private?.files ?? []) {
+    try {
+      const doc = JSON.parse(readFileSync(f.path, "utf8"));
+      docs.push({ ...doc, id: f.id, fileAt: Math.round(statSync(f.path).mtimeMs / 1000) });
+    } catch { docs.push({ id: f.id, error: "not available" }); }
+  }
+  return JSON.stringify({ v: 1, t: Math.round(Date.now() / 1000), docs });
+}
+
 let cache: { t: number; body: string } | null = null;
 async function build() {
   const now = Date.now();
@@ -204,12 +227,18 @@ const server = Bun.serve({
     const h = {
       "access-control-allow-origin": cfg.corsOrigin ?? "*",
       "access-control-allow-methods": "GET, OPTIONS",
+      "access-control-allow-headers": "authorization",
+      "access-control-max-age": "86400",
       "cache-control": "no-store",
       "x-content-type-options": "nosniff",
     };
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: h });
     if (req.method !== "GET" && req.method !== "HEAD") return new Response("method not allowed", { status: 405, headers: h });
-    // Any path returns the status document, so it works regardless of how the funnel mounts it.
+    if (new URL(req.url).pathname.endsWith("/private.json")) {
+      if (!cfg.private || !ownerOk(req)) return new Response("not found", { status: 404, headers: h });
+      return new Response(privateDocs(), { headers: { ...h, "content-type": "application/json; charset=utf-8" } });
+    }
+    // Any other path returns the status document, so it works regardless of how the funnel mounts it.
     return new Response(await build(), { headers: { ...h, "content-type": "application/json; charset=utf-8" } });
   },
 });

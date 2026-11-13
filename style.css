@@ -62,6 +62,18 @@ section h2{font-size:1.35rem;margin:0 0 1rem}
 .banner{border:1px solid var(--warn);border-radius:10px;padding:.6rem .9rem;margin:0 0 1rem;font-size:.92rem}
 .small{font-size:.86rem;color:var(--mut)}
 .mut{color:var(--mut)}
+.owner h4{margin:1.1rem 0 .4rem;font-size:.98rem}
+.owner h4 .small{font-weight:400;margin-left:.4rem}
+.owner .metric .rng{margin-top:.15rem}
+.tscroll{overflow-x:auto;margin:0 -.2rem}
+.tscroll table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums}
+.tscroll th,.tscroll td{padding:.3rem .55rem;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.tscroll th{color:var(--mut);font-weight:600;font-size:.8rem;white-space:normal;vertical-align:bottom}
+.tscroll th:first-child,.tscroll td:first-child{text-align:left;white-space:normal}
+.tscroll tr:last-child td{border-bottom:0}
+.obars{display:flex;gap:2px;height:72px;align-items:flex-end;border-bottom:1px solid var(--line)}
+.obars i{flex:1;min-width:1px;background:var(--acc2);border-radius:2px 2px 0 0}
+.linkbtn{font:inherit;color:var(--mut);background:none;border:0;padding:0;text-decoration:underline;cursor:pointer}
 footer{border-top:1px solid var(--line);margin-top:2rem}
 footer .wrap{padding-top:1.2rem;padding-bottom:2rem;display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;color:var(--mut);font-size:.88rem}
 footer a{color:var(--mut)}
