@@ -1,0 +1,4 @@
+#!/bin/sh
+# Prints the owner link of the status page (README: Betreiber-Ansicht). The key stays in its root-only file; this needs
+# sudo, so only an admin of the box gets the link:   ssh ubuntu@<box> status-link
+echo "https://ascendancydota.github.io/status/#key=$(sudo cat /etc/status-exporter/owner-key)"

@@ -16,6 +16,8 @@ if [ ! -s /etc/status-exporter/owner-key ]; then
   openssl rand -hex 32 | sudo tee /etc/status-exporter/owner-key >/dev/null
 fi
 sudo chown root:statusexp /etc/status-exporter/owner-key && sudo chmod 640 /etc/status-exporter/owner-key
+# `ssh ubuntu@<box> status-link` prints the owner link (the script holds no secret)
+tr -d '' < "$src/status-link" | sudo tee /usr/local/bin/status-link >/dev/null && sudo chmod 755 /usr/local/bin/status-link
 command -v vnstat >/dev/null || sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q vnstat
 sudo install -d -m 755 /opt/status-exporter /etc/status-exporter
 sudo install -m 644 "$src/exporter.ts" /opt/status-exporter/exporter.ts

@@ -92,7 +92,13 @@ Der Exporter kann zusätzlich fertige JSON-Dokumente weiterreichen, die ein ande
 (`"private"` in der Config: `keyFile` und eine Liste `files` mit `id` und `path`). Sie kommen nur unter
 `…/status/private.json` und nur mit `Authorization: Bearer <Schlüssel>`; ohne passenden Schlüssel antwortet der
 Exporter mit 404. Der Schlüssel entsteht bei `install.sh` einmalig in `/etc/status-exporter/owner-key`
-(anzeigen: `sudo cat /etc/status-exporter/owner-key`; neu vergeben: Datei löschen, `install.sh` erneut).
+(neu vergeben: Datei löschen, `install.sh` erneut).
+
+Den fertigen Link gibt der Server aus – vom eigenen Rechner:
+
+```
+ssh -i ~/.ssh/oracle_binokel ubuntu@89.168.70.227 status-link
+```
 
 Auf der Seite erscheint der Abschnitt nur in einem Browser, der den Schlüssel hat: einmal
 `https://ascendancydota.github.io/status/#key=<Schlüssel>` öffnen – er wird im Browser gespeichert und aus der
