@@ -1,3 +1,4 @@
 [
-{"t":1794722998,"up":{"host":1,"binokel":1,"teamspeak":1,"relay":1},"m":{"binokel.players":0,"binokel.tables":28,"teamspeak.clients":0,"relay.streams":0,"host.cpu":7.7,"host.mem":9,"host.disk":14,"host.load":0.2,"host.tx":9304182779,"host.rx":6804643719}}
+{"t":1794722998,"up":{"host":1,"binokel":1,"teamspeak":1,"relay":1},"m":{"binokel.players":0,"binokel.tables":28,"teamspeak.clients":0,"relay.streams":0,"host.cpu":7.7,"host.mem":9,"host.disk":14,"host.load":0.2,"host.tx":9304182779,"host.rx":6804643719}},
+{"t":1794751118,"up":{"host":1,"binokel":1,"teamspeak":1,"relay":1},"m":{"binokel.players":3,"binokel.tables":28,"teamspeak.clients":0,"relay.streams":0,"host.cpu":4.7,"host.mem":9.2,"host.disk":14.1,"host.load":0.2,"host.tx":9533813027,"host.rx":6941019245}}
 ]
